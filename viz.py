@@ -3,7 +3,7 @@ import sqlite3
 import time
 
 server = xmlrpclib.Server('http://localhost:20738/RPC2')
-conn = sqlite3.connect('/home/davyg/Downloads/nasalib/Hypatheon-1.1/data/hyp-nasalib-6.0.4.sdb')
+conn = sqlite3.connect('hyp-nasalib-6.0.4.sdb')
 
 G = server.ubigraph
 
