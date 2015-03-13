@@ -2,7 +2,7 @@
 
 --Installation--
 
-Required packages : python, python-pysqlite2, 
+Packages required : python and maybe sqlite and xmlrpc related package may be included by default, 
 
 Download and Uncompress Ubigraph : http://ubietylab.net/ubigraph/content/Downloads/index.php
 

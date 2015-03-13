@@ -11,7 +11,7 @@ G.clear();
 
 c = conn.cursor()
 
-c.execute('''SELECT Declarations.body, Proofs.script FROM Proofs INNER JOIN Declarations ON Proofs.declaration_id=Declarations.declaration_id''')
+c.execute('''SELECT Declarations.body, Proofs.script, Declarations.name_id FROM Proofs INNER JOIN Declarations ON Proofs.declaration_id=Declarations.declaration_id''')
 
 i = 0
 scripts = {}
@@ -106,22 +106,24 @@ def addVertix(ident, name, body):
 	if not ident in vertices:
 		x = G.new_vertex()
 		vertices[ident] = x
-		G.set_vertex_attribute(x, 'color', "#0000ff")
+		G.set_vertex_attribute(x, 'fontsize', "1")
 		if "theorem" in body.lower():
 			G.set_vertex_attribute(x, 'color', "#00ff00")
 			G.set_vertex_attribute(x, 'label', name)
 		elif "axiom" in body.lower() or "postulate" in body.lower():
-			G.set_vertex_attribute(x, 'color', "#ff0000")
+			G.set_vertex_attribute(x, 'color', "#ffff00")
 			G.set_vertex_attribute(x, 'label', name)
-		elif "lemma" in body.lower() or "corollary" in body.lower() or "formula" in body.lower() or "proposition" in body.lower():
+		elif "lemma" in body.lower() or "corollary" in body.lower() or "formula" in body.lower() or "proposition" in body.lower() or "type" in body.lower():
 			G.set_vertex_attribute(x, 'color', "##ffff0")
+			G.set_vertex_attribute(x, 'label', name)
+			G.set_vertex_attribute(x, 'size', "0.1")
 		else:
-			print(name, body)
-			raise Exception()
+			G.set_vertex_attribute(x, 'color', "#00ffff")
+			G.set_vertex_attribute(x, 'size', "0.5")
 	return vertices[ident]
 
 REQUEST = """
-SELECT P.declaration_id, PN.name, PD.body, D.declaration_id, DN.name, D.body
+SELECT P.declaration_id, PN.name, PD.body, D.declaration_id, DN.name, D.body, proofs.status
 FROM proofreferences AS P
 INNER JOIN declarations AS PD
   ON P.declaration_id = PD.declaration_id
@@ -131,13 +133,39 @@ INNER JOIN allnames AS PN
   ON P.decl_name_id = PN.name_id
 INNER JOIN allnames AS DN
   ON D.name_id = DN.name_id
+INNER JOIN proofs
+  ON proofs.proof_id = P.proof_id
 WHERE
   P.ref_type = "formula" AND
-  P.decl_type = "formula" AND
-  P.library = "reals"
+  P.decl_type = "formula"
 """
 
-MAX = 10000
+def computeParent(declaration_id, first=False):
+	time.sleep(0.0001)
+	c.execute(REQUEST+'AND P.declaration_id="' + str(declaration_id) +'"')
+	for res in c.fetchall():
+		if res[1] == "nat_induction":
+			break
+		x = addVertix(res[0], res[1], res[2])
+		y = addVertix(res[3], res[4], res[5])
+		if first:
+			G.set_vertex_attribute(x, 'color', "#0000ff")
+			G.set_vertex_attribute(x, 'label', res[1])
+			G.set_vertex_attribute(x, 'size', "4")
+		if res[6] != "proved":
+			G.set_vertex_attribute(x, 'color', "#ff0000")
+		z = G.new_edge(y,x)
+		G.set_edge_attribute(z, 'arrow', "true")
+		computeParent(res[3])
+
+MAX = 10000000
+
+def test3():
+	c.execute(REQUEST + "AND proofs.status = 'proved' GROUP BY P.declaration_id ORDER BY count(D.declaration_id)")
+	l = c.fetchall()
+	computeParent(1175, True)
+
+test3()
 
 def compute():
 	c.execute(REQUEST)
@@ -151,8 +179,6 @@ def compute():
 		y = addVertix(res[3], res[4], res[5])
 		G.new_edge(x,y)
 		i += 1
-
-compute()
 
 """
 for name in names:
