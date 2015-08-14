@@ -109,13 +109,13 @@ def addVertix(ident, name, body):
 		G.set_vertex_attribute(x, 'fontsize', "1")
 		if "theorem" in body.lower():
 			G.set_vertex_attribute(x, 'color', "#00ff00")
-			G.set_vertex_attribute(x, 'label', name)
+			#G.set_vertex_attribute(x, 'label', name)
 		elif "axiom" in body.lower() or "postulate" in body.lower():
 			G.set_vertex_attribute(x, 'color', "#ffff00")
 			G.set_vertex_attribute(x, 'label', name)
 		elif "lemma" in body.lower() or "corollary" in body.lower() or "formula" in body.lower() or "proposition" in body.lower() or "type" in body.lower():
 			G.set_vertex_attribute(x, 'color', "##ffff0")
-			G.set_vertex_attribute(x, 'label', name)
+			#G.set_vertex_attribute(x, 'label', name)
 			G.set_vertex_attribute(x, 'size', "0.1")
 		else:
 			G.set_vertex_attribute(x, 'color', "#00ffff")
@@ -165,8 +165,6 @@ def test3():
 	l = c.fetchall()
 	computeParent(1175, True)
 
-test3()
-
 def compute():
 	c.execute(REQUEST)
 	i = 0
@@ -179,6 +177,8 @@ def compute():
 		y = addVertix(res[3], res[4], res[5])
 		G.new_edge(x,y)
 		i += 1
+
+compute()
 
 """
 for name in names:
